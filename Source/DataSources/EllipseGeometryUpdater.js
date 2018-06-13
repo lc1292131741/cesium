@@ -247,20 +247,11 @@ define([
         options.granularity = defined(granularity) ? granularity.getValue(Iso8601.MINIMUM_VALUE) : undefined;
         options.stRotation = defined(stRotation) ? stRotation.getValue(Iso8601.MINIMUM_VALUE) : undefined;
         options.numberOfVerticalLines = defined(numberOfVerticalLines) ? numberOfVerticalLines.getValue(Iso8601.MINIMUM_VALUE) : undefined;
+        options.offsetAttribute = GeometryHeightProperty.computeGeometryOffsetAttribute(height, extrudedHeight, Iso8601.MINIMUM_VALUE);
 
-        if (extrudedHeight instanceof GeometryHeightProperty) {
-            var heightReference = extrudedHeight.getHeightReference(Iso8601.MINIMUM_VALUE);
-            if (heightReference === HeightReference.CLAMP_TO_GROUND) {
-                scratchEllipseGeometry.setOptions(options);
-                options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchEllipseGeometry.rectangle);
-                options.offsetAttribute = GeometryOffsetAttribute.TOP;
-            } else if (heightReference === HeightReference.RELATIVE_TO_GROUND) {
-                options.offsetAttribute = GeometryOffsetAttribute.ALL;
-            } else {
-                options.offsetAttribute = GeometryOffsetAttribute.NONE;
-            }
-        } else {
-            options.offsetAttribute = GeometryOffsetAttribute.NONE;
+        if (extrudedHeight instanceof GeometryHeightProperty && Property.getValueOrDefault(extrudedHeight.height, Iso8601.MINIMUM_VALUE, HeightReference.NONE) === HeightReference.CLAMP_TO_GROUND) {
+            scratchEllipseGeometry.setOptions(options);
+            options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchEllipseGeometry.rectangle);
         }
     };
 
@@ -285,15 +276,23 @@ define([
 
     DynamicEllipseGeometryUpdater.prototype._setOptions = function(entity, ellipse, time) {
         var options = this._options;
+        var height = ellipse.height;
+        var extrudedHeight = ellipse.extrudedHeight;
         options.center = Property.getValueOrUndefined(entity.position, time, options.center);
         options.semiMajorAxis = Property.getValueOrUndefined(ellipse.semiMajorAxis, time);
         options.semiMinorAxis = Property.getValueOrUndefined(ellipse.semiMinorAxis, time);
         options.rotation = Property.getValueOrUndefined(ellipse.rotation, time);
-        options.height = Property.getValueOrUndefined(ellipse.height, time);
-        options.extrudedHeight = Property.getValueOrUndefined(ellipse.extrudedHeight, time);
+        options.height = Property.getValueOrUndefined(height, time);
+        options.extrudedHeight = Property.getValueOrUndefined(extrudedHeight, time);
         options.granularity = Property.getValueOrUndefined(ellipse.granularity, time);
         options.stRotation = Property.getValueOrUndefined(ellipse.stRotation, time);
         options.numberOfVerticalLines = Property.getValueOrUndefined(ellipse.numberOfVerticalLines, time);
+        options.offsetAttribute = GeometryHeightProperty.computeGeometryOffsetAttribute(height, extrudedHeight, time);
+
+        if (extrudedHeight instanceof GeometryHeightProperty && Property.getValueOrDefault(extrudedHeight.height, time, HeightReference.NONE) === HeightReference.CLAMP_TO_GROUND) {
+            scratchEllipseGeometry.setOptions(options);
+            options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchEllipseGeometry.rectangle);
+        }
     };
 
     return EllipseGeometryUpdater;

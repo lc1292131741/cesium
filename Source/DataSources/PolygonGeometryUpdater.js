@@ -243,10 +243,13 @@ define([
             hierarchyValue = new PolygonHierarchy(hierarchyValue);
         }
 
-        var heightValue = Property.getValueOrUndefined(polygon.height, Iso8601.MINIMUM_VALUE);
+        var height = polygon.height;
+        var extrudedHeight = polygon.extrudedHeight;
+
+        var heightValue = Property.getValueOrUndefined(height, Iso8601.MINIMUM_VALUE);
         var closeTopValue = Property.getValueOrDefault(polygon.closeTop, Iso8601.MINIMUM_VALUE, true);
         var closeBottomValue = Property.getValueOrDefault(polygon.closeBottom, Iso8601.MINIMUM_VALUE, true);
-        var extrudedHeightValue = Property.getValueOrUndefined(polygon.extrudedHeight, Iso8601.MINIMUM_VALUE);
+        var extrudedHeightValue = Property.getValueOrUndefined(extrudedHeight, Iso8601.MINIMUM_VALUE);
         var perPositionHeightValue = Property.getValueOrUndefined(polygon.perPositionHeight, Iso8601.MINIMUM_VALUE);
 
         if (defined(extrudedHeightValue) && !defined(heightValue) && !defined(perPositionHeightValue)) {
@@ -261,21 +264,11 @@ define([
         options.perPositionHeight = perPositionHeightValue;
         options.closeTop = closeTopValue;
         options.closeBottom = closeBottomValue;
+        options.offsetAttribute = GeometryHeightProperty.computeGeometryOffsetAttribute(height, extrudedHeight, Iso8601.MINIMUM_VALUE);
 
-        var extrudedHeight = polygon.extrudedHeight;
-        if (extrudedHeight instanceof GeometryHeightProperty) {
-            var heightReference = extrudedHeight.getHeightReference(Iso8601.MINIMUM_VALUE);
-            if (heightReference ===  HeightReference.CLAMP_TO_GROUND) {
-                scratchPolygonGeometry.setOptions(options);
-                options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchPolygonGeometry.rectangle);
-                options.offsetAttribute = GeometryOffsetAttribute.TOP;
-            } else if (heightReference === HeightReference.RELATIVE_TO_GROUND) {
-                options.offsetAttribute = GeometryOffsetAttribute.ALL;
-            } else {
-                options.offsetAttribute = GeometryOffsetAttribute.NONE;
-            }
-        } else {
-            options.offsetAttribute = GeometryOffsetAttribute.NONE;
+        if (extrudedHeight instanceof GeometryHeightProperty && Property.getValueOrDefault(extrudedHeight.height, Iso8601.MINIMUM_VALUE, HeightReference.NONE) === HeightReference.CLAMP_TO_GROUND) {
+            scratchPolygonGeometry.setOptions(options);
+            options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchPolygonGeometry.rectangle);
         }
     };
 
@@ -306,6 +299,9 @@ define([
 
     DyanmicPolygonGeometryUpdater.prototype._setOptions = function(entity, polygon, time) {
         var options = this._options;
+        var height = polygon.height;
+        var extrudedHeight = polygon.extrudedHeight;
+
         var hierarchy = Property.getValueOrUndefined(polygon.hierarchy, time);
         if (isArray(hierarchy)) {
             options.polygonHierarchy = new PolygonHierarchy(hierarchy);
@@ -313,13 +309,20 @@ define([
             options.polygonHierarchy = hierarchy;
         }
 
-        options.height = Property.getValueOrUndefined(polygon.height, time);
-        options.extrudedHeight = Property.getValueOrUndefined(polygon.extrudedHeight, time);
+        options.height = Property.getValueOrUndefined(height, time);
+        options.extrudedHeight = Property.getValueOrUndefined(extrudedHeight, time);
         options.granularity = Property.getValueOrUndefined(polygon.granularity, time);
         options.stRotation = Property.getValueOrUndefined(polygon.stRotation, time);
         options.perPositionHeight = Property.getValueOrUndefined(polygon.perPositionHeight, time);
         options.closeTop = Property.getValueOrDefault(polygon.closeTop, time, true);
         options.closeBottom = Property.getValueOrDefault(polygon.closeBottom, time, true);
+        options.offsetAttribute = GeometryHeightProperty.computeGeometryOffsetAttribute(height, extrudedHeight, time);
+
+        if (extrudedHeight instanceof GeometryHeightProperty && Property.getValueOrDefault(extrudedHeight.height, time, HeightReference.NONE) === HeightReference.CLAMP_TO_GROUND) {
+            scratchPolygonGeometry.setOptions(options);
+            options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchPolygonGeometry.rectangle);
+        }
+
     };
 
     return PolygonGeometryUpdater;

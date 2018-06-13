@@ -239,20 +239,11 @@ define([
         options.granularity = defined(granularity) ? granularity.getValue(Iso8601.MINIMUM_VALUE) : undefined;
         options.stRotation = defined(stRotation) ? stRotation.getValue(Iso8601.MINIMUM_VALUE) : undefined;
         options.rotation = defined(rotation) ? rotation.getValue(Iso8601.MINIMUM_VALUE) : undefined;
+        options.offsetAttribute = GeometryHeightProperty.computeGeometryOffsetAttribute(height, extrudedHeight, Iso8601.MINIMUM_VALUE);
 
-        if (extrudedHeight instanceof GeometryHeightProperty) {
-            var heightReference =  extrudedHeight.getHeightReference(Iso8601.MINIMUM_VALUE);
-            if (heightReference === HeightReference.CLAMP_TO_GROUND) {
-                scratchRectangleGeometry.setOptions(options);
-                options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchRectangleGeometry.rectangle);
-                options.offsetAttribute = GeometryOffsetAttribute.TOP;
-            } else if (heightReference === HeightReference.RELATIVE_TO_GROUND) {
-                options.offsetAttribute = GeometryOffsetAttribute.ALL;
-            } else {
-                options.offsetAttribute = GeometryOffsetAttribute.NONE;
-            }
-        } else {
-            options.offsetAttribute = GeometryOffsetAttribute.ALL;
+        if (extrudedHeight instanceof GeometryHeightProperty && Property.getValueOrDefault(extrudedHeight.height, Iso8601.MINIMUM_VALUE, HeightReference.NONE) === HeightReference.CLAMP_TO_GROUND) {
+            scratchRectangleGeometry.setOptions(options);
+            options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchRectangleGeometry.rectangle);
         }
     };
 
@@ -282,12 +273,21 @@ define([
 
     DynamicRectangleGeometryUpdater.prototype._setOptions = function(entity, rectangle, time) {
         var options = this._options;
+        var height = rectangle.height;
+        var extrudedHeight = rectangle.extrudedHeight;
+
         options.rectangle = Property.getValueOrUndefined(rectangle.coordinates, time, options.rectangle);
-        options.height = Property.getValueOrUndefined(rectangle.height, time);
-        options.extrudedHeight = Property.getValueOrUndefined(rectangle.extrudedHeight, time);
+        options.height = Property.getValueOrUndefined(height, time);
+        options.extrudedHeight = Property.getValueOrUndefined(extrudedHeight, time);
         options.granularity = Property.getValueOrUndefined(rectangle.granularity, time);
         options.stRotation = Property.getValueOrUndefined(rectangle.stRotation, time);
         options.rotation = Property.getValueOrUndefined(rectangle.rotation, time);
+        options.offsetAttribute = GeometryHeightProperty.computeGeometryOffsetAttribute(height, extrudedHeight, time);
+
+        if (extrudedHeight instanceof GeometryHeightProperty && Property.getValueOrDefault(extrudedHeight.height, time, HeightReference.NONE) === HeightReference.CLAMP_TO_GROUND) {
+            scratchRectangleGeometry.setOptions(options);
+            options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchRectangleGeometry.rectangle);
+        }
     };
 
     return RectangleGeometryUpdater;

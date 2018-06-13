@@ -234,20 +234,11 @@ define([
         options.granularity = defined(granularity) ? granularity.getValue(Iso8601.MINIMUM_VALUE) : undefined;
         options.width = defined(width) ? width.getValue(Iso8601.MINIMUM_VALUE) : undefined;
         options.cornerType = defined(cornerType) ? cornerType.getValue(Iso8601.MINIMUM_VALUE) : undefined;
+        options.offsetAttribute = GeometryHeightProperty.computeGeometryOffsetAttribute(height, extrudedHeight, Iso8601.MINIMUM_VALUE);
 
-        if (extrudedHeight instanceof GeometryHeightProperty) {
-            var heightReference = extrudedHeight.getHeightReference(Iso8601.MINIMUM_VALUE);
-            if (heightReference === HeightReference.CLAMP_TO_GROUND) {
-                scratchCorridorGeometry.setOptions(options);
-                options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchCorridorGeometry.rectangle);
-                options.offsetAttribute = GeometryOffsetAttribute.TOP;
-            } else if (heightReference === HeightReference.RELATIVE_TO_GROUND) {
-                options.offsetAttribute = GeometryOffsetAttribute.ALL;
-            } else {
-                options.offsetAttribute = GeometryOffsetAttribute.NONE;
-            }
-        } else {
-            options.offsetAttribute = GeometryOffsetAttribute.NONE;
+        if (extrudedHeight instanceof GeometryHeightProperty && Property.getValueOrDefault(extrudedHeight.height, Iso8601.MINIMUM_VALUE, HeightReference.NONE) === HeightReference.CLAMP_TO_GROUND) {
+            scratchCorridorGeometry.setOptions(options);
+            options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchCorridorGeometry.rectangle);
         }
     };
 
@@ -272,12 +263,20 @@ define([
 
     DynamicCorridorGeometryUpdater.prototype._setOptions = function(entity, corridor, time) {
         var options = this._options;
+        var height = corridor.height;
+        var extrudedHeight = corridor.extrudedHeight;
         options.positions = Property.getValueOrUndefined(corridor.positions, time);
         options.width = Property.getValueOrUndefined(corridor.width, time);
-        options.height = Property.getValueOrUndefined(corridor.height, time);
-        options.extrudedHeight = Property.getValueOrUndefined(corridor.extrudedHeight, time);
+        options.height = Property.getValueOrUndefined(height, time);
+        options.extrudedHeight = Property.getValueOrUndefined(extrudedHeight, time);
         options.granularity = Property.getValueOrUndefined(corridor.granularity, time);
         options.cornerType = Property.getValueOrUndefined(corridor.cornerType, time);
+        options.offsetAttribute = GeometryHeightProperty.computeGeometryOffsetAttribute(height, extrudedHeight, time);
+
+        if (extrudedHeight instanceof GeometryHeightProperty && Property.getValueOrDefault(extrudedHeight.height, time, HeightReference.NONE) === HeightReference.CLAMP_TO_GROUND) {
+            scratchCorridorGeometry.setOptions(options);
+            options.extrudedHeight = GeometryHeightProperty.getMinimumTerrainValue(scratchCorridorGeometry.rectangle);
+        }
     };
 
     return CorridorGeometryUpdater;

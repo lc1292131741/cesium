@@ -811,7 +811,6 @@ define([
         this._vertexFormat = VertexFormat.clone(vertexFormat, this._vertexFormat);
         this._extrudedHeight = Math.min(extrudedHeight, height);
         this._shadowVolume = defaultValue(options.shadowVolume, false);
-        this._offsetAttribute = defaultValue(options.offsetAttribute, GeometryOffsetAttribute.NONE);
         this._offsetAttribute = options.offsetAttribute;
 
         this._rectangle = undefined;

@@ -3,6 +3,7 @@ define([
     '../Core/defineProperties',
     '../Core/Check',
     '../Core/Event',
+    '../Core/GeometryOffsetAttribute',
     '../Scene/HeightReference',
     './createPropertyDescriptor',
     './Property'
@@ -11,6 +12,7 @@ define([
     defineProperties,
     Check,
     Event,
+    GeometryOffsetAttribute,
     HeightReference,
     createPropertyDescriptor,
     Property) {
@@ -118,14 +120,6 @@ define([
         return 0;
     };
 
-    GeometryHeightProperty.prototype.getHeightReference = function(time) {
-        //>>includeStart('debug', pragmas.debug);
-        Check.defined('time', time);
-        //>>includeEnd('debug');
-
-        return Property.getValueOrDefault(this._heightReference, time, HeightReference.NONE);
-    };
-
     /**
      * Used to get the minimum terrain value for when extrudedHeight is using CLAMP_TO_GROUND;
      * @private
@@ -135,6 +129,38 @@ define([
         Check.defined('rectangle', rectangle);
         //>>includeEnd('debug');
         return ApproximateTerrainHeights.getApproximateTerrainHeights(rectangle).minimumTerrainHeight;
+    };
+
+    /**
+     * Gets the GeometryOffsetAttribute based on the values of height and extrudedHeight
+     * @param {Property} height
+     * @param {Property} extrudedHeight
+     * @param {JulianDate} time
+     * @returns {GeometryOffsetAttribute}
+     * @private
+     */
+    GeometryHeightProperty.computeGeometryOffsetAttribute = function(height, extrudedHeight, time) {
+        if (!(extrudedHeight instanceof GeometryHeightProperty) && !(height instanceof GeometryHeightProperty)) {
+            return GeometryOffsetAttribute.NONE;
+        }
+
+        var heightReference = Property.getValueOrDefault(height.height, time, HeightReference.NONE);
+        var extrudedHeightReference = Property.getValueOrDefault(extrudedHeight.height, time, HeightReference.NONE);
+
+        var n = 0;
+        if (heightReference !== HeightReference.NONE) {
+            n++;
+        }
+        if (extrudedHeightReference === HeightReference.RELATIVE_TO_GROUND) {
+            n++;
+        }
+        if (n === 2) {
+            return GeometryOffsetAttribute.ALL;
+        }
+        if (n === 1) {
+            return GeometryOffsetAttribute.TOP;
+        }
+        return GeometryOffsetAttribute.NONE;
     };
 
     /**

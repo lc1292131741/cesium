@@ -821,6 +821,32 @@ define([
      * });
      */
     function CorridorGeometry(options) {
+        this._positions = undefined;
+        this._ellipsoid = undefined;
+        this._vertexFormat = undefined;
+        this._width = undefined;
+        this._height = undefined;
+        this._extrudedHeight = undefined;
+        this._cornerType = undefined;
+        this._granularity = undefined;
+        this._shadowVolume = undefined;
+        this._offsetAttribute = undefined;
+        this._workerName = 'createCorridorGeometry';
+        this._rectangle = undefined;
+
+        /**
+         * The number of elements used to pack the object into an array.
+         * @type {Number}
+         */
+        this.packedLength = undefined;
+
+        this.setOptions(options);
+    }
+
+    /**
+     * @private
+     */
+    CorridorGeometry.prototype.setOptions = function(options) {
         options = defaultValue(options, defaultValue.EMPTY_OBJECT);
         var positions = options.positions;
         var width = options.width;
@@ -838,15 +864,15 @@ define([
         var extrudedHeight = defaultValue(options.extrudedHeight, height);
 
         this._positions = positions;
-        this._ellipsoid = Ellipsoid.clone(defaultValue(options.ellipsoid, Ellipsoid.WGS84));
-        this._vertexFormat = VertexFormat.clone(defaultValue(options.vertexFormat, VertexFormat.DEFAULT));
+        this._ellipsoid = Ellipsoid.clone(defaultValue(options.ellipsoid, Ellipsoid.WGS84), this._ellipsoid);
+        this._vertexFormat = VertexFormat.clone(defaultValue(options.vertexFormat, VertexFormat.DEFAULT), this._vertexFormat);
         this._width = width;
         this._height = Math.max(height, extrudedHeight);
         this._extrudedHeight = Math.min(height, extrudedHeight);
         this._cornerType = defaultValue(options.cornerType, CornerType.ROUNDED);
         this._granularity = defaultValue(options.granularity, CesiumMath.RADIANS_PER_DEGREE);
         this._shadowVolume = defaultValue(options.shadowVolume, false);
-        this._workerName = 'createCorridorGeometry';
+        this._offsetAttribute = defaultValue(options.offsetAttribute, GeometryOffsetAttribute.NONE);
         this._offsetAttribute = options.offsetAttribute;
         this._rectangle = undefined;
 
@@ -855,7 +881,7 @@ define([
          * @type {Number}
          */
         this.packedLength = 1 + positions.length * Cartesian3.packedLength + Ellipsoid.packedLength + VertexFormat.packedLength + 7;
-    }
+    };
 
     /**
      * Stores the provided instance into the provided array.

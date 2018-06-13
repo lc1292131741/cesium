@@ -583,6 +583,36 @@ define([
      * var geometry = Cesium.PolygonGeometry.createGeometry(extrudedPolygon);
      */
     function PolygonGeometry(options) {
+        this._vertexFormat = undefined;
+        this._ellipsoid = undefined;
+        this._granularity = undefined;
+        this._stRotation = undefined;
+        this._height = undefined;
+        this._extrudedHeight = undefined;
+        this._extrude = undefined;
+        this._closeTop = undefined;
+        this._closeBottom = undefined;
+        this._polygonHierarchy = undefined;
+        this._perPositionHeight = undefined;
+        this._shadowVolume = undefined;
+        this._offsetAttribute = undefined;
+        this._workerName = 'createPolygonGeometry';
+
+        this._rectangle = undefined;
+
+        /**
+         * The number of elements used to pack the object into an array.
+         * @type {Number}
+         */
+        this.packedLength = undefined;
+
+        this.setOptions(options);
+    }
+
+    /**
+     * @private
+     */
+    PolygonGeometry.prototype.setOptions = function(options) {
         //>>includeStart('debug', pragmas.debug);
         Check.typeOf.object('options', options);
         Check.typeOf.object('options.polygonHierarchy', options.polygonHierarchy);
@@ -607,8 +637,8 @@ define([
             height = h;
         }
 
-        this._vertexFormat = VertexFormat.clone(vertexFormat);
-        this._ellipsoid = Ellipsoid.clone(ellipsoid);
+        this._vertexFormat = VertexFormat.clone(vertexFormat, this._vertexFormat);
+        this._ellipsoid = Ellipsoid.clone(ellipsoid, this._ellipsoid);
         this._granularity = granularity;
         this._stRotation = stRotation;
         this._height = height;
@@ -619,7 +649,7 @@ define([
         this._perPositionHeight = perPositionHeight;
         this._perPositionHeightExtrude = perPositionHeightExtrude;
         this._shadowVolume = defaultValue(options.shadowVolume, false);
-        this._workerName = 'createPolygonGeometry';
+        this._offsetAttribute = defaultValue(options.offsetAttribute, GeometryOffsetAttribute.NONE);
         this._offsetAttribute = options.offsetAttribute;
 
         this._rectangle = undefined;
@@ -630,7 +660,7 @@ define([
          * @type {Number}
          */
         this.packedLength = PolygonGeometryLibrary.computeHierarchyPackedLength(polygonHierarchy) + Ellipsoid.packedLength + VertexFormat.packedLength + 11;
-    }
+    };
 
     /**
      * A description of a polygon from an array of positions. Polygon geometry can be rendered with both {@link Primitive} and {@link GroundPrimitive}.

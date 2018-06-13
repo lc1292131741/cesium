@@ -746,6 +746,30 @@ define([
      * @see EllipseGeometry.createGeometry
      */
     function EllipseGeometry(options) {
+        this._center = undefined;
+        this._semiMajorAxis = undefined;
+        this._semiMinorAxis = undefined;
+        this._ellipsoid = undefined;
+        this._rotation = undefined;
+        this._stRotation = undefined;
+        this._height = undefined;
+        this._granularity = undefined;
+        this._vertexFormat = undefined;
+        this._extrudedHeight = undefined;
+        this._extrude = undefined;
+        this._shadowVolume = undefined;
+        this._offsetAttribute = undefined;
+        this._workerName = 'createEllipseGeometry';
+
+        this._rectangle = undefined;
+
+        this.setOptions(options);
+    }
+
+    /**
+     * @private
+     */
+    EllipseGeometry.prototype.setOptions = function(options) {
         options = defaultValue(options, defaultValue.EMPTY_OBJECT);
 
         var center = options.center;
@@ -776,23 +800,23 @@ define([
         var height = defaultValue(options.height, 0.0);
         var extrudedHeight = defaultValue(options.extrudedHeight, height);
 
-        this._center = Cartesian3.clone(center);
+        this._center = Cartesian3.clone(center, this._center);
         this._semiMajorAxis = semiMajorAxis;
         this._semiMinorAxis = semiMinorAxis;
-        this._ellipsoid = Ellipsoid.clone(ellipsoid);
+        this._ellipsoid = Ellipsoid.clone(ellipsoid, this._ellipsoid);
         this._rotation = defaultValue(options.rotation, 0.0);
         this._stRotation = defaultValue(options.stRotation, 0.0);
         this._height = Math.max(extrudedHeight, height);
         this._granularity = granularity;
-        this._vertexFormat = VertexFormat.clone(vertexFormat);
+        this._vertexFormat = VertexFormat.clone(vertexFormat, this._vertexFormat);
         this._extrudedHeight = Math.min(extrudedHeight, height);
         this._shadowVolume = defaultValue(options.shadowVolume, false);
-        this._workerName = 'createEllipseGeometry';
+        this._offsetAttribute = defaultValue(options.offsetAttribute, GeometryOffsetAttribute.NONE);
         this._offsetAttribute = options.offsetAttribute;
 
         this._rectangle = undefined;
         this._textureCoordinateRotationPoints = undefined;
-    }
+    };
 
     /**
      * The number of elements used to pack the object into an array.

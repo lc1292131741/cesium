@@ -136,12 +136,12 @@ define([
      * @param {Property} height
      * @param {Property} extrudedHeight
      * @param {JulianDate} time
-     * @returns {GeometryOffsetAttribute}
+     * @returns {GeometryOffsetAttribute|undefined}
      * @private
      */
     GeometryHeightProperty.computeGeometryOffsetAttribute = function(height, extrudedHeight, time) {
         if (!(extrudedHeight instanceof GeometryHeightProperty) && !(height instanceof GeometryHeightProperty)) {
-            return GeometryOffsetAttribute.NONE;
+            return undefined;
         }
 
         var heightReference = Property.getValueOrDefault(height.height, time, HeightReference.NONE);
@@ -160,7 +160,7 @@ define([
         if (n === 1) {
             return GeometryOffsetAttribute.TOP;
         }
-        return GeometryOffsetAttribute.NONE;
+        return undefined;
     };
 
     /**

@@ -113,12 +113,11 @@ define([
         var entity = this._entity;
         var isAvailable = entity.isAvailable(time);
 
-        var attributes;
+        var attributes = {
+            show : new ShowGeometryInstanceAttribute(isAvailable && entity.isShowing && this._showProperty.getValue(time) && this._fillProperty.getValue(time)),
+            distanceDisplayCondition : DistanceDisplayConditionGeometryInstanceAttribute.fromDistanceDisplayCondition(this._distanceDisplayConditionProperty.getValue(time))
+        };
 
-        var color;
-        var show = new ShowGeometryInstanceAttribute(isAvailable && entity.isShowing && this._showProperty.getValue(time) && this._fillProperty.getValue(time));
-        var distanceDisplayCondition = DistanceDisplayConditionGeometryInstanceAttribute.fromDistanceDisplayCondition(this._distanceDisplayConditionProperty.getValue(time));
-        var offset = OffsetGeometryInstanceAttribute.fromCartesian3(Property.getValueOrDefault(this._terrainOffsetProperty, time, defaultOffset, offsetScratch));
         if (this._materialProperty instanceof ColorMaterialProperty) {
             var currentColor;
             if (defined(this._materialProperty.color) && (this._materialProperty.color.isConstant || isAvailable)) {
@@ -127,19 +126,11 @@ define([
             if (!defined(currentColor)) {
                 currentColor = Color.WHITE;
             }
-            color = ColorGeometryInstanceAttribute.fromColor(currentColor);
-            attributes = {
-                show : show,
-                distanceDisplayCondition : distanceDisplayCondition,
-                color : color,
-                offset : offset
-            };
-        } else {
-            attributes = {
-                show : show,
-                distanceDisplayCondition : distanceDisplayCondition,
-                offset : offset
-            };
+            attributes.color = ColorGeometryInstanceAttribute.fromColor(currentColor);
+        }
+
+        if (defined(this._options.offsetAttribute)) {
+            attributes.offset = OffsetGeometryInstanceAttribute.fromCartesian3(Property.getValueOrDefault(this._terrainOffsetProperty, time, defaultOffset, offsetScratch));
         }
 
         return new GeometryInstance({
@@ -169,17 +160,21 @@ define([
         var entity = this._entity;
         var isAvailable = entity.isAvailable(time);
         var outlineColor = Property.getValueOrDefault(this._outlineColorProperty, time, Color.BLACK, scratchColor);
-        var offset = OffsetGeometryInstanceAttribute.fromCartesian3(Property.getValueOrDefault(this._terrainOffsetProperty, time, defaultOffset, offsetScratch));
+
+        var attributes = {
+            show : new ShowGeometryInstanceAttribute(isAvailable && entity.isShowing && this._showProperty.getValue(time) && this._showOutlineProperty.getValue(time)),
+            color : ColorGeometryInstanceAttribute.fromColor(outlineColor),
+            distanceDisplayCondition : DistanceDisplayConditionGeometryInstanceAttribute.fromDistanceDisplayCondition(this._distanceDisplayConditionProperty.getValue(time))
+        };
+
+        if (defined(this._options.offsetAttribute)) {
+            attributes.offset = OffsetGeometryInstanceAttribute.fromCartesian3(Property.getValueOrDefault(this._terrainOffsetProperty, time, defaultOffset, offsetScratch));
+        }
 
         return new GeometryInstance({
             id : entity,
             geometry : new CorridorOutlineGeometry(this._options),
-            attributes : {
-                show : new ShowGeometryInstanceAttribute(isAvailable && entity.isShowing && this._showProperty.getValue(time) && this._showOutlineProperty.getValue(time)),
-                color : ColorGeometryInstanceAttribute.fromColor(outlineColor),
-                distanceDisplayCondition : DistanceDisplayConditionGeometryInstanceAttribute.fromDistanceDisplayCondition(this._distanceDisplayConditionProperty.getValue(time)),
-                offset : offset
-            }
+            attributes : attributes
         });
     };
 

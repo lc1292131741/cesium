@@ -2,6 +2,7 @@ defineSuite([
         'DataSources/CorridorGeometryUpdater',
         'Core/Cartesian3',
         'Core/CornerType',
+        'Core/GeometryOffsetAttribute',
         'Core/JulianDate',
         'Core/TimeInterval',
         'Core/TimeIntervalCollection',
@@ -22,6 +23,7 @@ defineSuite([
         CorridorGeometryUpdater,
         Cartesian3,
         CornerType,
+        GeometryOffsetAttribute,
         JulianDate,
         TimeInterval,
         TimeIntervalCollection,
@@ -193,6 +195,7 @@ defineSuite([
         expect(geometry._granularity).toEqual(options.granularity);
         expect(geometry._extrudedHeight).toEqual(options.extrudedHeight);
         expect(geometry._cornerType).toEqual(options.cornerType);
+        expect(geometry._offsetAttribute).toBeUndefined();
 
         instance = updater.createOutlineGeometryInstance(time);
         geometry = instance.geometry;
@@ -201,6 +204,7 @@ defineSuite([
         expect(geometry._granularity).toEqual(options.granularity);
         expect(geometry._extrudedHeight).toEqual(options.extrudedHeight);
         expect(geometry._cornerType).toEqual(options.cornerType);
+        expect(geometry._offsetAttribute).toBeUndefined();
     });
 
     it('dynamic updater sets properties', function() {
@@ -234,6 +238,7 @@ defineSuite([
         expect(options.width).toEqual(corridor.width.getValue());
         expect(options.granularity).toEqual(corridor.granularity.getValue());
         expect(options.cornerType).toEqual(corridor.cornerType.getValue());
+        expect(options.offsetAttribute).toBeUndefined();
     });
 
     it('geometryChanged event is raised when expected', function() {

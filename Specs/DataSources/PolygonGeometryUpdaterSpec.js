@@ -1,6 +1,7 @@
 defineSuite([
         'DataSources/PolygonGeometryUpdater',
         'Core/Cartesian3',
+        'Core/GeometryOffsetAttribute',
         'Core/JulianDate',
         'Core/PolygonHierarchy',
         'Core/TimeIntervalCollection',
@@ -20,6 +21,7 @@ defineSuite([
     ], function(
         PolygonGeometryUpdater,
         Cartesian3,
+        GeometryOffsetAttribute,
         JulianDate,
         PolygonHierarchy,
         TimeIntervalCollection,
@@ -225,6 +227,7 @@ defineSuite([
         expect(geometry._extrudedHeight).toEqual(options.extrudedHeight);
         expect(geometry._closeTop).toEqual(options.closeTop);
         expect(geometry._closeBottom).toEqual(options.closeBottom);
+        expect(geometry._offsetAttribute).toBeUndefined();
 
         instance = updater.createOutlineGeometryInstance(time);
         geometry = instance.geometry;
@@ -232,6 +235,7 @@ defineSuite([
         expect(geometry._granularity).toEqual(options.granularity);
         expect(geometry._extrudedHeight).toEqual(options.extrudedHeight);
         expect(geometry._perPositionHeight).toEqual(options.perPositionHeight);
+        expect(geometry._offsetAttribute).toBeUndefined();
     });
 
     it('Checks that a polygon with per position heights isn\'t on terrain', function() {
@@ -291,6 +295,7 @@ defineSuite([
         expect(options.stRotation).toEqual(polygon.stRotation.getValue());
         expect(options.closeTop).toEqual(polygon.closeTop.getValue());
         expect(options.closeBottom).toEqual(polygon.closeBottom.getValue());
+        expect(options.offsetAttribute).toBeUndefined();
     });
 
     it('geometryChanged event is raised when expected', function() {

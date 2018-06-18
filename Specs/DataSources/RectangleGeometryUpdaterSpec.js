@@ -1,6 +1,7 @@
 defineSuite([
         'DataSources/RectangleGeometryUpdater',
         'Core/Cartesian3',
+        'Core/GeometryOffsetAttribute',
         'Core/JulianDate',
         'Core/Rectangle',
         'Core/TimeIntervalCollection',
@@ -17,6 +18,7 @@ defineSuite([
     ], function(
         RectangleGeometryUpdater,
         Cartesian3,
+        GeometryOffsetAttribute,
         JulianDate,
         Rectangle,
         TimeIntervalCollection,
@@ -161,12 +163,14 @@ defineSuite([
         expect(geometry._surfaceHeight).toEqual(options.height);
         expect(geometry._granularity).toEqual(options.granularity);
         expect(geometry._extrudedHeight).toEqual(options.extrudedHeight);
+        expect(geometry._offsetAttribute).toBeUndefined();
 
         instance = updater.createOutlineGeometryInstance(time);
         geometry = instance.geometry;
         expect(geometry._surfaceHeight).toEqual(options.height);
         expect(geometry._granularity).toEqual(options.granularity);
         expect(geometry._extrudedHeight).toEqual(options.extrudedHeight);
+        expect(geometry._offsetAttribute).toBeUndefined();
     });
 
     it('dynamic updater sets properties', function() {
@@ -194,6 +198,7 @@ defineSuite([
         expect(options.extrudedHeight).toEqual(rectangle.extrudedHeight.getValue());
         expect(options.granularity).toEqual(rectangle.granularity.getValue());
         expect(options.stRotation).toEqual(rectangle.stRotation.getValue());
+        expect(options.offsetAttribute).toBeUndefined();
     });
 
     it('geometryChanged event is raised when expected', function() {

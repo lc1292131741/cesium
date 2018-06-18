@@ -55,14 +55,18 @@ define([
         this._definitionChanged = new Event();
         this._terrainHeight = 0;
         this._removeCallbackFunc = undefined;
+        this._removeEventListener = undefined;
+        this._removeModeListener = undefined;
 
         var that = this;
-        this._removeEventListener = scene.terrainProviderChanged.addEventListener(function() {
-            that._updateClamping();
-        });
-        this._removeModeListener = scene.morphComplete.addEventListener(function() {
-            that._updateClamping();
-        });
+        if (defined(scene.globe)) {
+            this._removeEventListener = scene.terrainProviderChanged.addEventListener(function() {
+                that._updateClamping();
+            });
+            this._removeModeListener = scene.morphComplete.addEventListener(function() {
+                that._updateClamping();
+            });
+        }
     }
 
     defineProperties(TerrainOffsetProperty.prototype, {
@@ -150,7 +154,7 @@ define([
         }
 
         var position = this._getPosition(time, scratchPosition);
-        if (!defined(position) || Cartesian3.equals(position, Cartesian3.ZERO)) {
+        if (!defined(position) || Cartesian3.equals(position, Cartesian3.ZERO) || !defined(this._scene.globe)) {
             return Cartesian3.clone(Cartesian3.ZERO, result);
         }
 
@@ -185,8 +189,12 @@ define([
     };
 
     TerrainOffsetProperty.prototype.destroy = function() {
-        this._removeEventListener();
-        this._removeModeListener();
+        if (defined(this._removeEventListener)) {
+            this._removeEventListener();
+        }
+        if (defined(this._removeModeListener)) {
+            this._removeModeListener();
+        }
         if (defined(this._removeCallbackFunc)) {
             this._removeCallbackFunc();
         }

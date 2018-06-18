@@ -29,7 +29,6 @@ define([
     'use strict';
 
     var defaultZIndex = new ConstantProperty(0);
-    var defaultTerrainOffsetProperty = new ConstantProperty(Cartesian3.ZERO);
 
     /**
      * An abstract class for updating ground geometry entities.
@@ -46,7 +45,7 @@ define([
         GeometryUpdater.call(this, options);
 
         this._zIndex = 0;
-        this._terrainOffsetProperty = defaultTerrainOffsetProperty;
+        this._terrainOffsetProperty = undefined;
     }
 
     if (defined(Object.create)) {
@@ -110,7 +109,7 @@ define([
         if (heightProperty instanceof GeometryHeightProperty || extrudedHeightProperty instanceof GeometryHeightProperty) {
             this._terrainOffsetProperty = new TerrainOffsetProperty(this._scene, heightProperty, extrudedHeightProperty, this._computeCenter.bind(this));
         } else {
-            this._terrainOffsetProperty = defaultTerrainOffsetProperty;
+            this._terrainOffsetProperty = undefined;
         }
     };
 

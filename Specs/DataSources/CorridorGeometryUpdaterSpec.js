@@ -4,6 +4,7 @@ defineSuite([
         'Core/CornerType',
         'Core/GeometryOffsetAttribute',
         'Core/JulianDate',
+        'Core/Math',
         'Core/TimeInterval',
         'Core/TimeIntervalCollection',
         'DataSources/ConstantProperty',
@@ -25,6 +26,7 @@ defineSuite([
         CornerType,
         GeometryOffsetAttribute,
         JulianDate,
+        CesiumMath,
         TimeInterval,
         TimeIntervalCollection,
         ConstantProperty,
@@ -56,7 +58,7 @@ defineSuite([
 
     function createBasicCorridor() {
         var corridor = new CorridorGraphics();
-        corridor.positions = new ConstantProperty(Cartesian3.fromRadiansArray([
+        corridor.positions = new ConstantProperty(Cartesian3.fromDegreesArray([
             0, 0,
             1, 0,
             1, 1,
@@ -71,13 +73,13 @@ defineSuite([
 
     function createDynamicCorridor() {
         var entity = createBasicCorridor();
-        entity.corridor.positions = createDynamicProperty(Cartesian3.fromRadiansArray([0, 0, 1, 0, 1, 1, 0, 1]));
+        entity.corridor.positions = createDynamicProperty(Cartesian3.fromDegreesArray([0, 0, 1, 0, 1, 1, 0, 1]));
         return entity;
     }
 
     function createBasicCorridorWithoutHeight() {
         var corridor = new CorridorGraphics();
-        corridor.positions = new ConstantProperty(Cartesian3.fromRadiansArray([
+        corridor.positions = new ConstantProperty(Cartesian3.fromDegreesArray([
             0, 0,
             1, 0,
             1, 1,
@@ -91,7 +93,7 @@ defineSuite([
 
     function createDynamicCorridorWithoutHeight() {
         var entity = createBasicCorridorWithoutHeight();
-        entity.corridor.positions = createDynamicProperty(Cartesian3.fromRadiansArray([0, 0, 1, 0, 1, 1, 0, 1]));
+        entity.corridor.positions = createDynamicProperty(Cartesian3.fromDegreesArray([0, 0, 1, 0, 1, 1, 0, 1]));
         return entity;
     }
 
@@ -209,7 +211,7 @@ defineSuite([
 
     it('dynamic updater sets properties', function() {
         var corridor = new CorridorGraphics();
-        corridor.positions = createDynamicProperty(Cartesian3.fromRadiansArray([
+        corridor.positions = createDynamicProperty(Cartesian3.fromDegreesArray([
             0, 0,
             1, 0,
             1, 1,
@@ -271,6 +273,13 @@ defineSuite([
         entity.viewFrom = new ConstantProperty(Cartesian3.UNIT_X);
         updater._onEntityPropertyChanged(entity, 'viewFrom');
         expect(listener.calls.count()).toEqual(4);
+    });
+
+    it('computes center', function() {
+        var entity = createBasicCorridor();
+        var updater = new CorridorGeometryUpdater(entity, scene);
+
+        expect(updater._computeCenter(time)).toEqualEpsilon(Cartesian3.fromDegrees(1.0, 1.0), CesiumMath.EPSILON10);
     });
 
     function getScene() {

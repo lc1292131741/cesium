@@ -152,8 +152,9 @@ define([
             return Cartesian3.clone(Cartesian3.ZERO, result);
         }
 
+        var scene = this._scene;
         var position = this._getPosition(time, scratchPosition);
-        if (!defined(position) || Cartesian3.equals(position, Cartesian3.ZERO) || !defined(this._scene.globe)) {
+        if (!defined(position) || Cartesian3.equals(position, Cartesian3.ZERO) || !defined(scene.globe)) {
             return Cartesian3.clone(Cartesian3.ZERO, result);
         }
 
@@ -165,22 +166,8 @@ define([
 
         this._updateClamping();
 
-        var normal = this._scene.globe.ellipsoid.geodeticSurfaceNormal(position, this._normal);
+        var normal = scene.globe.ellipsoid.geodeticSurfaceNormal(position, this._normal);
         return Cartesian3.multiplyByScalar(normal, this._terrainHeight, result);
-    };
-
-    /**
-     * Compares this property to the provided property and returns
-     * <code>true</code> if they are equal, <code>false</code> otherwise.
-     *
-     * @param {Property} [other] The other property.
-     * @returns {Boolean} <code>true</code> if left and right are equal, <code>false</code> otherwise.
-     */
-    TerrainOffsetProperty.prototype.equals = function(other) {
-        return this === other ||//
-               (other instanceof TerrainOffsetProperty &&
-                this._scene === other._scene &&
-                Property.equals(this._position, other._position));
     };
 
     TerrainOffsetProperty.prototype.isDestroyed = function() {

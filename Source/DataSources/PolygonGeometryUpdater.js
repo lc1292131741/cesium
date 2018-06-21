@@ -198,7 +198,11 @@ define([
         for (var i = 0; i < length; i++) {
             centroid = Cartesian3.add(positions[i], centroid, centroid);
         }
-        return Cartesian3.multiplyByScalar(centroid, 1 / length, centroid);
+        centroid = Cartesian3.multiplyByScalar(centroid, 1 / length, centroid);
+        if (defined(this._scene.globe)) {
+            centroid = this._scene.globe.ellipsoid.scaleToGeodeticSurface(centroid, centroid);
+        }
+        return centroid;
     };
 
     PolygonGeometryUpdater.prototype._isHidden = function(entity, polygon) {

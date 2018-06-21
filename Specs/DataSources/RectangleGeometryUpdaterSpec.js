@@ -3,6 +3,7 @@ defineSuite([
         'Core/Cartesian3',
         'Core/GeometryOffsetAttribute',
         'Core/JulianDate',
+        'Core/Math',
         'Core/Rectangle',
         'Core/TimeIntervalCollection',
         'DataSources/ConstantProperty',
@@ -20,6 +21,7 @@ defineSuite([
         Cartesian3,
         GeometryOffsetAttribute,
         JulianDate,
+        CesiumMath,
         Rectangle,
         TimeIntervalCollection,
         ConstantProperty,
@@ -50,7 +52,7 @@ defineSuite([
         var rectangle = new RectangleGraphics();
         var entity = new Entity();
         entity.rectangle = rectangle;
-        entity.rectangle.coordinates = new ConstantProperty(new Rectangle(0, 0, 1, 1));
+        entity.rectangle.coordinates = new ConstantProperty(new Rectangle(-1, -1, 1, 1));
         entity.rectangle.height = new ConstantProperty(0);
         return entity;
     }
@@ -227,6 +229,13 @@ defineSuite([
         entity.viewFrom = new ConstantProperty(Cartesian3.UNIT_X);
         updater._onEntityPropertyChanged(entity, 'viewFrom');
         expect(listener.calls.count()).toEqual(3);
+    });
+
+    it('computes center', function() {
+        var entity = createBasicRectangle();
+        var updater = new RectangleGeometryUpdater(entity, scene);
+
+        expect(updater._computeCenter(time)).toEqualEpsilon(Cartesian3.fromDegrees(0.0, 0.0), CesiumMath.EPSILON10);
     });
 
     function getScene() {

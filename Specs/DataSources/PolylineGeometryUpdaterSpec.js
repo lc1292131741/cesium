@@ -714,6 +714,7 @@ defineSuite([
         expect(function() {
             dynamicUpdater.update(undefined);
         }).toThrowDeveloperError();
+        dynamicUpdater.destroy();
         updater.destroy();
     });
 
@@ -746,6 +747,7 @@ defineSuite([
         var line = primitive.get(0);
         expect(result).toEqual(BoundingSphere.fromPoints(line.positions));
 
+        dynamicUpdater.destroy();
         updater.destroy();
         scene.primitives.removeAll();
     });
@@ -778,6 +780,7 @@ defineSuite([
             var attributes = primitive.getGeometryInstanceAttributes(entity);
             expect(result).toEqual(attributes.boundingSphere);
 
+            dynamicUpdater.destroy();
             updater.destroy();
         });
     });
@@ -792,6 +795,7 @@ defineSuite([
         var state = dynamicUpdater.getBoundingSphere(result);
         expect(state).toBe(BoundingSphereState.FAILED);
 
+        dynamicUpdater.destroy();
         updater.destroy();
         scene.primitives.removeAll();
     });
@@ -806,6 +810,7 @@ defineSuite([
             dynamicUpdater.getBoundingSphere(undefined);
         }).toThrowDeveloperError();
 
+        dynamicUpdater.destroy();
         updater.destroy();
         scene.primitives.removeAll();
     });
@@ -819,6 +824,7 @@ defineSuite([
         spyOn(PolylinePipeline, 'generateCartesianArc').and.callThrough();
         dynamicUpdater.update(time);
         expect(PolylinePipeline.generateCartesianArc).not.toHaveBeenCalled();
+        dynamicUpdater.destroy();
         updater.destroy();
         scene.primitives.removeAll();
         scene.globe = new Globe();
@@ -840,5 +846,7 @@ defineSuite([
 
         var instance = updater.createFillGeometryInstance(time);
         expect(instance.geometry instanceof GroundPolylineGeometry).toBe(false);
+
+        updater.destroy();
     });
 }, 'WebGL');

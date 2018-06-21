@@ -72,7 +72,7 @@ define([
          */
         isConstant : {
             get : function() {
-                return Property.isConstant(this._positions) && Property.isConstant(this._heightReference);
+                return Property.isConstant(this._height) && Property.isConstant(this._heightReference);
             }
         },
         /**
@@ -117,7 +117,7 @@ define([
         var heightReference = Property.getValueOrDefault(this._heightReference, time, HeightReference.NONE);
 
         if (heightReference !== HeightReference.CLAMP_TO_GROUND) {
-            return Property.getValueOrUndefined(this._height, time);
+            return Property.getValueOrDefault(this._height, time, 0);
         }
         return 0;
     };

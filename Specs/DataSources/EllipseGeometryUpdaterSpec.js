@@ -309,6 +309,13 @@ defineSuite([
         expect(listener.calls.count()).toEqual(5);
     });
 
+    it('computes center', function() {
+        var entity = createBasicEllipse();
+        var updater = new EllipseGeometryUpdater(entity, scene);
+
+        expect(updater._computeCenter(time)).toEqual(entity.position.getValue(time));
+    });
+
     function getScene() {
         return scene;
     }

@@ -1,5 +1,6 @@
 define([
     '../Core/ApproximateTerrainHeights',
+    '../Core/defined',
     '../Core/defineProperties',
     '../Core/Check',
     '../Core/Event',
@@ -9,6 +10,7 @@ define([
     './Property'
 ], function(
     ApproximateTerrainHeights,
+    defined,
     defineProperties,
     Check,
     Event,
@@ -144,8 +146,8 @@ define([
             return undefined;
         }
 
-        var heightReference = Property.getValueOrDefault(height.height, time, HeightReference.NONE);
-        var extrudedHeightReference = Property.getValueOrDefault(extrudedHeight.height, time, HeightReference.NONE);
+        var heightReference = defined(height) ? Property.getValueOrDefault(height.heightReference, time, HeightReference.NONE) : HeightReference.NONE;
+        var extrudedHeightReference = defined(extrudedHeight) ? Property.getValueOrDefault(extrudedHeight.heightReference, time, HeightReference.NONE) : HeightReference.NONE;
 
         var n = 0;
         if (heightReference !== HeightReference.NONE) {

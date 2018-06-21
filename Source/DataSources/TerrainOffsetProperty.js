@@ -116,6 +116,12 @@ define([
 
         var that = this;
         var cartographicPosition = ellipsoid.cartesianToCartographic(position, this._cartographicPosition);
+        var height = globe.getHeight(cartographicPosition);
+        if (defined(height)) {
+            this._terrainHeight = height;
+        } else {
+            this._terrainHeight = 0;
+        }
 
         function updateFunction(clampedPosition) {
             var carto = ellipsoid.cartesianToCartographic(clampedPosition, scratchCarto);
@@ -123,13 +129,6 @@ define([
             that.definitionChanged.raiseEvent();
         }
         this._removeCallbackFunc = surface.updateHeight(cartographicPosition, updateFunction);
-
-        var height = globe.getHeight(cartographicPosition);
-        if (defined(height)) {
-            this._terrainHeight = height;
-        } else {
-            this._terrainHeight = 0;
-        }
     };
 
     /**

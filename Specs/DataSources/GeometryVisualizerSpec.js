@@ -68,7 +68,30 @@ defineSuite([
     beforeAll(function() {
         scene = createScene();
 
-        return GroundPrimitive.initializeTerrainHeights();
+        var objects = new EntityCollection();
+        var visualizer = new GeometryVisualizer(scene, objects, scene.primitives, scene.groundPrimitives);
+
+        var ellipse = new EllipseGraphics();
+        ellipse.semiMajorAxis = new ConstantProperty(2);
+        ellipse.semiMinorAxis = new ConstantProperty(1);
+        ellipse.material = new ColorMaterialProperty();
+        ellipse.height = new ConstantProperty(0);
+
+        var entity = new Entity();
+        entity.position = new ConstantPositionProperty(new Cartesian3(1234, 5678, 9101112));
+        entity.ellipse = ellipse;
+        objects.add(entity);
+
+        return pollToPromise(function() {
+            scene.initializeFrame();
+            var isUpdated = visualizer.update(time);
+            scene.render(time);
+            return isUpdated;
+        }).then(function(){
+            visualizer.destroy();
+        }).otherwise(function(){
+            visualizer.destroy();
+        });
     });
 
     afterAll(function() {

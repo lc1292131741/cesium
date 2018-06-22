@@ -73,6 +73,8 @@ defineSuite([
             return isUpdated;
         }).then(function() {
             visualizer.destroy();
+        }).otherwise(function() {
+            visualizer.destroy();
         });
     });
 

@@ -246,7 +246,6 @@ define([
 
         var averageLoadTime = getAverageLoadTime(that);
         if (!defined(averageLoadTime)) {
-            // Don't return the next interval until there is an average load time
             return undefined;
         }
 
@@ -286,12 +285,6 @@ define([
 
     function getIntervalIndex(that, interval) {
         return that._intervals.indexOf(interval.start);
-    }
-
-    function getFrame(that, interval) {
-        var index = getIntervalIndex(that, interval);
-        var frames = that._frames;
-        return frames[index];
     }
 
     function requestFrame(that, interval, frameState) {
@@ -384,7 +377,6 @@ define([
         var frame = requestFrame(that, interval, frameState);
         prepareFrame(that, frame, frameState);
         frame.touchedFrameNumber = frameState.frameNumber;
-        return frame;
     }
 
     function getUnloadCondition(frameState) {
@@ -406,17 +398,18 @@ define([
                         that._totalMemoryUsageInBytes -= pointCloud.geometryByteLength;
                     }
                     if (defined(pointCloud)) {
-                        // TODO : what happens if Draco decoding resolves after a frame is destroyed?
                         pointCloud.destroy();
+                    }
+                    if (frame === that._lastRenderedFrame) {
+                        that._lastRenderedFrame = undefined;
                     }
                     frames[i] = undefined;
                 }
             }
         }
-        that._lastRenderedFrame = undefined; // TODO : better approach than this? Maybe last rendered interval?
     }
 
-    function getLastReadyFrame(that, previousInterval, currentInterval) {
+    function getNearestReadyFrame(that, currentInterval, previousInterval) {
         var i;
         var frame;
         var frames = that._frames;
@@ -424,16 +417,14 @@ define([
         var currentIndex = getIntervalIndex(that, currentInterval);
         var previousIndex = getIntervalIndex(that, previousInterval);
 
-        if (clockMultiplier >= 0) {
-            // Animating forwards, so look backwards
+        if (clockMultiplier >= 0) { // look backwards
             for (i = currentIndex; i >= previousIndex; --i) {
                 frame = frames[i];
                 if (defined(frame) && frame.ready) {
                     return frame;
                 }
             }
-        } else {
-            // Animating backwards, so look forwards
+        } else { // look forwards
             for (i = currentIndex; i <= previousIndex; ++i) {
                 frame = frames[i];
                 if (defined(frame) && frame.ready) {
@@ -507,15 +498,14 @@ define([
         var currentInterval = getCurrentInterval(this);
 
         if (!defined(currentInterval)) {
-            // Nothing to render this frame
             return;
         }
 
-        var clockStateChanged = false;
+        var clockMultiplierChanged = false;
         var clockMultiplier = getClockMultiplier(this);
         var clockPaused = clockMultiplier === 0;
         if (clockMultiplier !== this._clockMultiplier) {
-            clockStateChanged = true;
+            clockMultiplierChanged  = true;
             this._clockMultiplier = clockMultiplier;
         }
 
@@ -523,7 +513,7 @@ define([
             previousInterval = currentInterval;
         }
 
-        if (!defined(nextInterval) || clockStateChanged) {
+        if (!defined(nextInterval) || clockMultiplierChanged ) {
             nextInterval = getNextInterval(this);
         }
 
@@ -532,21 +522,22 @@ define([
             nextInterval = getNextInterval(this);
         }
 
-        var frame = getLastReadyFrame(this, previousInterval, currentInterval);
+        var frame = getNearestReadyFrame(this, currentInterval, previousInterval);
 
         if (!defined(frame)) {
+            // The frame is not ready to render. This can happen when the simulation starts, when scrubbing the timeline
+            // to a frame that hasn't loaded yet, or reaching the next interval before its frame is finished loading.
+            // Just render the last rendered frame in its place until it finishes loading.
             loadFrame(this, previousInterval, frameState);
+            frame = this._lastRenderedFrame;
         }
-
-        // If the frame we want to render isn't ready for any reason, render the last rendered frame
-        frame = defaultValue(frame, this._lastRenderedFrame);
 
         if (defined(frame)) {
             renderFrame(this, frame, timeSinceLoad, isClipped, clippingPlanesDirty, frameState);
         }
 
         if (defined(nextInterval)) {
-            // Start loading the next frame
+            // Prefetch the next frame
             loadFrame(this, nextInterval, frameState);
         }
 
